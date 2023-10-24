@@ -1,0 +1,54 @@
+// Electrónica Digital 2 - Proyecto 2
+// María Daniela Cabrera Porras, 21344
+
+// Librerías ************************************************************************************************
+#include <Arduino.h>
+#include <SPI.h>
+//**********************************************************************************************************
+
+// Pines display ********************************************************************************************
+#define ecgPin 15
+#define tivaPin 5
+//**********************************************************************************************************
+
+// Variables *******************************************************************************
+int latidos = 0;
+//**********************************************************************************************************
+
+void setup()
+{
+  // start the serial connection
+  Serial.begin(115200);
+  // wait for serial monitor to open
+  while (!Serial);
+  Serial.print("Connecting...");
+  
+  SPI.begin(tivaPin);
+  Spi.onData([](void * data, size_t len){
+    int command = *((int*)data);
+    if (command == 1){
+      int latidos = digitalRead(ecgPin);
+      SPI.transfer(&latidos, sizeof(latidos));
+    }
+  });
+
+  // Configurar entradas y salidas ******************************************************************
+  pinMode(ecgPin, INPUT);
+  pinMode(tivaPin, OUTPUT);
+  //********************************************************************************************************
+}
+
+void loop()
+{
+  latidos = lecturaCorazon();
+  Serial.print("Ritmo cardaico: ");
+  Serial.println(latidos); //imprime la lectura del sensor cardiaco
+  delay(500);
+}
+
+int lecturaCorazon(){ //lectura del sensor ritmo cardiaco
+ 
+  int latidos = digitalRead(ecgPin);
+
+  return latidos;
+}
