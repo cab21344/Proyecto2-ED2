@@ -1,19 +1,19 @@
 // Electrónica Digital 2 - Proyecto 2
 // María Daniela Cabrera Porras, 21344
 
-// Librerías ************************************************************************************************
+// Librerías ******************************************
 #include <Arduino.h>
 #include <SPI.h>
-//**********************************************************************************************************
+//*****************************************************
 
-// Pines display ********************************************************************************************
-#define ecgPin 15
+// Pines display **************************************
+#define ecgPin 35
 #define tivaPin 5
-//**********************************************************************************************************
+//******************************************************
 
-// Variables *******************************************************************************
+// Variables *******************************************
 int latidos = 0;
-//**********************************************************************************************************
+//******************************************************
 
 void setup()
 {
@@ -22,33 +22,33 @@ void setup()
   // wait for serial monitor to open
   while (!Serial);
   Serial.print("Connecting...");
-  
-  SPI.begin(tivaPin);
-  Spi.onData([](void * data, size_t len){
-    int command = *((int*)data);
-    if (command == 1){
-      int latidos = digitalRead(ecgPin);
-      SPI.transfer(&latidos, sizeof(latidos));
-    }
-  });
 
-  // Configurar entradas y salidas ******************************************************************
+  // Configurar entradas y salidas ***********************
   pinMode(ecgPin, INPUT);
   pinMode(tivaPin, OUTPUT);
-  //********************************************************************************************************
-}
+  //*******************************************************
 
+  SPI.begin(tivaPin);
+  SPI.setBitOrder(MSBFIRST);
+  SPI.setDataMode(SPI_MODE0);
+  SPI.setClockDivider(SPI_CLOCK_DIV16);
+
+  int latidos = digitalRead(ecgPin);
+  SPI.transfer(&latidos, sizeof(latidos));
+}
 void loop()
 {
-  latidos = lecturaCorazon();
   Serial.print("Ritmo cardaico: ");
   Serial.println(latidos); //imprime la lectura del sensor cardiaco
-  delay(500);
+  delay(1000);
 }
 
 int lecturaCorazon(){ //lectura del sensor ritmo cardiaco
- 
-  int latidos = digitalRead(ecgPin);
+  digitalWrite(tivaPin, LOW);
+  SPI.transfer(1);
+  delay(10);
+  int latidos = SPI.transfer(0);
+  digitalWrite(tivaPin, HIGH);
 
   return latidos;
 }
