@@ -3,58 +3,54 @@
 
 // Librerías ******************************************************
 #include <Arduino.h>
-#include <SPI.h>
 //*****************************************************************
 
 // Pines display **************************************************
 #define ecgPin 35
-#define tivaPin 5
 //*****************************************************************
 
 // Variables ******************************************************
 int latidos = 0;
+String bufferTiva;
+void medirSens(void);
 //*****************************************************************
 
 void setup()
 {
   // start the serial connection
   Serial.begin(115200);
+  Serial2.begin(115200);
   // wait for serial monitor to open
   while (!Serial);
-  Serial.print("Connecting...");
+  Serial.print("Conectando...");
   
-  //Conf comunicación con Tiva**************************************
-  SPI.begin(tivaPin); //inicia comunicación SPI con la tiva
-  SPI.setBitOrder(MSBFIRST); //conf ordfen de los bits
-  SPI.setDataMode(SPI_MODE0); //conf el modo de los datos SPI
-  SPI.setClockDivider(SPI_CLOCK_DIV16); //conf velocidad de comunicación
-  //***************************************************************
-
   // Configurar entradas y salidas ********************************
   pinMode(ecgPin, INPUT);
-  pinMode(tivaPin, OUTPUT);
-  //***************************************************************
-  
-  //Lectura del sensor y envío del valor a tiva *******************
-    int latidos = digitalRead(ecgPin);
-    SPI.transfer(&latidos, sizeof(latidos)); 
-  //***************************************************************
-
+  //*************************************************************** 
 }
 
+
 void loop()
-{
+{  
   Serial.print("Ritmo cardiaco: ");
   Serial.println(latidos); //imprime la lectura del sensor cardiaco
   delay(1000);
+
+
+ if(Serial2.available()){
+  String inData = Serial2.readStringUntil('\n');
+
+    if(inData == "measure"){
+      Serial.println("Medición");
+      medirSens();
+      Serial2.println(latidos);
+
+      Serial.print("El ritmo cardiaco es de: ");
+      Serial.println(latidos);
+    }
+  }
 }
 
-int lecturaCorazon(){ //lectura del sensor ritmo cardiaco
-  digitalWrite(tivaPin, LOW); //selecciona el pin de la tiva para com
-  SPI.transfer(1); //envía comando para solicitar lectura del sensor
-  delay(10);
-  int latidos = SPI.transfer(0);//recibe respuesta del dispositivo esclavo
-  digitalWrite(tivaPin, HIGH); //deja de seleccionar la tiva
-
-  return latidos;//devuelve calor del sensor
+void medirSens(void){
+  latidos = analogRead(ecgPin);
 }
