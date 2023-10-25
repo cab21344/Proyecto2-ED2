@@ -1,2 +1,33 @@
+
 // Electrónica Digital 2 - Proyecto 2
 // María Daniela Cabrera Porras, 21344
+
+#include "driverlib/gpio.h"   // Incluye la biblioteca GPIO.
+
+const int botonMedir = GPIO_PA2;
+void setup() {
+  // initialize both serial ports:
+  Serial.begin(115200);
+  Serial2.begin(115200);
+
+  pinMode(botonMedir, INPUT_PULLUP);
+}
+
+void loop() {
+  int estadoBot = digitalRead(botonMedir);
+  
+  // read from port 1, send to port 0:
+  if (Serial2.available()) {
+    int inByte = Serial2.read();
+    Serial.write(inByte); 
+  }
+  if(Serial.available()){
+    int inByte = Serial.read();
+
+    if(estadoBot == HIGH){
+      Serial.println("Medición");
+      Serial2.println("measure");
+    }
+  delay(100);
+  }
+}
