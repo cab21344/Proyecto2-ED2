@@ -4,64 +4,103 @@
 
 // Librerías ******************************************************
 #include "driverlib/gpio.h"   // Incluye la biblioteca GPIO.
-#include <Arduino.h>
 #include <SPI.h>
 #include <SD.h>
+
 //*****************************************************************
 
 // Definiciones ***************************************************
-#define CS_PIN 10 //sd: pin de chip select
+#define TFT_DC 9
+#define TFT_CS 10
+#define botonMedir PF_4
+#define botonGuardar PF_0
+#define buzzerPin PF_2
 //*****************************************************************
 
 // Variables ******************************************************
-const int botonMedir = 33;
-const int botonGuardar = 34;
-int buzzerPin = 40;
-
-
-File myFile; //archivo para SD
+File root; //archivo para SD
+int estadoMed = 0;
+int estadoGuar = 0;
 //*****************************************************************
 
 
-
+//***************************************************************
+//Void Setup
+//***************************************************************
 void setup() {
-  // initialize both serial ports:
+  // initialize both serial ports ***********************
   Serial.begin(115200);
   Serial2.begin(115200);
+  SPI.setModule(0);
 
-  //se inicia pantalla tft
-  pinMode(botonMedir, INPUT_PULLUP);
 
-  //se inicia SD
-  if (!SD.begin(10)) { //pin de la SD
+  //se inicia SD ***********************
+  Serial.println("Iniciando tarjeta SD");
+  pinMode(12, OUTPUT);
+
+  /*if (!SD.begin(12)) { //pin de la SD
     Serial.println("Inicialización fallida de SD");
     while (true) {} //si falla que se quede en bucle
   }
   Serial.println("Tarjeta SD inicializada"); //mensaje de SD inicializada
-
-  //Abre la SD
-  myFile = SD.open("/");
-  printDirectory(myFile, 0);
+*/
+  //Abre la SD***********************
+  root = SD.open("/");
+  printDirectory(root, 0);
   Serial.println("Listo!");
 
-  //Indica que se inició comunicación serial
+  //Indica que se inició comunicación serial ***********************
   Serial.println("Inicio de comunicación serial"); //confimación comunicación serial
 
-  //Inputs y Outputs
+  //Inputs y Outputs ***********************
   pinMode(botonMedir, INPUT_PULLUP);
   pinMode(botonGuardar, INPUT_PULLUP);
-  pinMode(CD_PIN, OUTPUT);
   pinMode(buzzerPin, OUTPUT);
 
   noTone(buzzerPin); //que inicie sin sonido
 
 }
 
+//***************************************************************
+//Crea roots cuando se trabaja con la SD
+//***************************************************************
+void printDirectory(File dir, int numTabs) {
+  while (true) {
+    File entry = dir.openNextFile();
+    if (!entry) {
+      // no more files
+      break;
+    }
+    for (uint8_t i = 0; i < numTabs; i++) {
+      Serial.print("\t");
+    }
+    Serial.print(entry.name());
+    if (entry.isDirectory()) {
+      Serial.println("/");
+      printDirectory(entry, numTabs + 1);
+    } else {
+      Serial.print("\t \t");
+      Serial.println(entry.size(), DEC);
+    }
+    entry.close();
+  }
+}
+
+//***************************************************************
+//Void Loops
+//***************************************************************
 void loop() {
   //Estados botones
-  int estadoMed = digitalRead(botonMedir);
-  int estadoGuar = digitalRead(botonGuardar);
-
+  estadoMed = digitalRead(botonMedir);
+  estadoGuar = digitalRead(botonGuardar);
+  if (estadoMed == LOW) {
+      Serial.println("Medición:");
+      Serial2.println("measure");
+      //Serial.println(inByte);
+      tone(buzzerPin, 500, 500);
+      delay(500);
+    }
+    
   //Boton 1 - Pide info al ESP32 **************************************************
   if (Serial2.available()) {
     int inByte = Serial2.read();
@@ -70,39 +109,30 @@ void loop() {
 
   if (Serial.available()) {
     int inByte = Serial.read();
+    
 
-    if (estadoMed == LOW) {
-      Serial.println("Medición");
-      Serial2.println("measure");
-      Serial.println(inByte);
-      tone(buzzerPin, 500, 500);
-      delay(500);
+    //Boton 2 - Guardar info en la SD **************************************************
+    if (estadoGuar == LOW) {
+      root = SD.open("datos.txt", FILE_WRITE); // Abre un archivo en modo escritura
 
-      // }
+      if (root) {
+        Serial.println("Guardando datos en la tarjeta SD...");
 
-      //Boton 2 - Guardar info en la SD **************************************************
-      if (estadoGuar == LOW) {
-        // Abre un archivo en modo escritura
-        myFile = SD.open("datos.txt", FILE_WRITE);
+        String dataToSave = "Este es el dato a guardar en la tarjeta SD."; // Texto a guardar en la tarjeta SD
 
-        if (myFile) {
-          Serial.println("Guardando datos en la tarjeta SD...");
+        root.println(dataToSave); // Escribe el dato en el archivo
+        root.close(); // Cierra el archivo
 
-          //lee datos del puerto serial
-          while (Serial2.available()) {
-            myFile.write(Serial2.read()); // Lee desde esp32 y escribe en tarjeta SD
-          }
-
-          myFile.close(); // Cierra el archivo
-          tone(buzzerPin, 1000, 500);
-          Serial.println("Datos guardados en la tarjeta SD.");
-          delay(500);
-        } else {
-          Serial.println("Error al abrir el archivo en la tarjeta SD.");
-        }
+        tone(buzzerPin, 1000, 500);
+        Serial.println("Datos guardados en la tarjeta SD.");
+        delay(500);
+        
+      } else {
+        Serial.println("Error al abrir el archivo en la tarjeta SD.");
       }
-
-      delay(100);
-      noTone(buzzerPin);
     }
+
+    delay(100);
+    noTone(buzzerPin);
   }
+}
