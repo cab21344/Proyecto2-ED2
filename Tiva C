@@ -40,15 +40,15 @@ void setup() {
 
 
   //se inicia SD ***********************
-  Serial.println("Iniciando tarjeta SD");
+  /*Serial.println("Iniciando tarjeta SD");
   pinMode(chipSelect, OUTPUT);
 
   if (!SD.begin(chipSelect)) { //pin de la SD
     Serial.println("Inicialización fallida de SD");
     while (true) {} //si falla que se quede en bucle
-    }
-    Serial.println("Tarjeta SD inicializada"); //mensaje de SD inicializada
-
+  }
+  Serial.println("Tarjeta SD inicializada"); //mensaje de SD inicializada
+*/
 
   //Indica que se inició comunicación serial ***********************
   Serial.println("Inicio de comunicación serial"); //confimación comunicación serial
@@ -68,9 +68,13 @@ void setup() {
 //Void Loops
 //***************************************************************
 void loop() {
+  int inByte = 0;
+  
   //Estados botones
   estadoMed = digitalRead(botonMedir);
   estadoGuar = digitalRead(botonGuardar);
+
+  //Boton 1 - Pide info al ESP32 **************************************************
   if (estadoMed == LOW) {
     Serial.println("Medición:");
     Serial2.println("measure");
@@ -79,7 +83,6 @@ void loop() {
     delay(500);
   }
 
-  //Boton 1 - Pide info al ESP32 **************************************************
   if (Serial2.available()) {
     int inByte = Serial2.read();
     Serial.write(inByte);
@@ -90,11 +93,15 @@ void loop() {
   }
 
   //Boton 2 - Guardar info en la SD **************************************************
-  String dataString = "";
-  File dataFile = SD.open("datalog.txt", FILE_WRITE);
-
+  if(Serial.available()){
+    inByte = Serial.read();
+  }
+  
   if (estadoGuar == LOW) {
+    File dataFile = SD.open("datalog.txt", FILE_WRITE);
+
     if (dataFile) {
+      String dataString = String(inByte);
       dataFile.print(dataString);
       dataFile.close();
       Serial.println("Información almacenada en la SD!");
