@@ -58,7 +58,12 @@ void loop() {
         Serial2.print(temp);
         Serial2.print(" ; ");
         Serial2.println(hum);
-        Serial.println("Se envió satisfactoriamente la información!");
+        Serial.println("Se envió satisfactoriamente la información:");
+        Serial.print("Temperatura y humedad: ");
+        Serial.print(temp);
+        Serial.print(" ; ");
+        Serial.println(hum);
+        Serial.println("--------------------------------------------");
       } else {
         Serial2.println("Error al leer la temperatura y humedad.");
       }
