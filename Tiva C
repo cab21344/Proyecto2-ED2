@@ -45,6 +45,7 @@ int DPINS[] = {PB_0, PB_1, PB_2, PB_3, PB_4, PB_5, PB_6, PB_7};
 // Variables ******************************************************
 int estadoMed = 0;
 int estadoGuar = 0;
+int posY = 120;
 File dataFile;
 const int chipSelect = SS;
 String inByte; //variable para almacenar datos de puerto serial
@@ -102,9 +103,9 @@ void setup() {
   LCD_Init();
   LCD_Clear(0xFFFF);
 
-  FillRect(0, 0, 320, 240, 0x421b);
+  FillRect(0, 0, 320, 240, 0xF81F);
   String text1 = "Iniciando pantalla";
-  LCD_Print(text1, 20, 100, 2, 0xffff, 0x421b);
+  LCD_Print(text1, 20, 100, 2, 0xffff, 0xF81F);
   LCD_Bitmap(240, 10, 60, 77, termo);
 
 }
@@ -124,8 +125,10 @@ void loop() {
 
     LCD_Clear(0xFFFF);
 
-    FillRect(0, 0, 320, 240, 0x421b);
-    LCD_Print(inByte, 20, 100, 2, 0xffff, 0x421b);
+    FillRect(0, 0, 320, 240, 0xFDA0);
+    String text5 = "Temp y hum:";
+    LCD_Print(text5, 20, 75, 2, 0xffff, 0xF81F);
+    LCD_Print(inByte, 20, 100, 2, 0xffff, 0xF81F);
     LCD_Bitmap(240, 10, 60, 77, termo);
 
 
@@ -133,6 +136,7 @@ void loop() {
 
   if (Serial2.available()) { //lectura del puerto serial2 (ESP32)
     inByte = Serial2.readStringUntil('\n'); //guarda info
+    Serial.println("Temp y hum:");
     Serial.println(inByte); //imprime info en serial monitor
   }
 
@@ -153,9 +157,9 @@ void loop() {
       delay(500);
       LCD_Clear(0xFFFF);
 
-      FillRect(0, 0, 320, 240, 0x421b);
+      FillRect(0, 0, 320, 240, 0xFDA0);
       String text2 = "Info almacenada";
-      LCD_Print(text2, 20, 100, 2, 0xffff, 0x421b);
+      LCD_Print(text2, 20, 100, 2, 0xffff, 0xF81F);
       LCD_Bitmap(240, 10, 60, 77, termo);
     } else {
       Serial.println("Error al almacenar información");
@@ -163,9 +167,9 @@ void loop() {
       delay(500);
       LCD_Clear(0xFFFF);
 
-      FillRect(0, 0, 320, 240, 0x421b);
+      FillRect(0, 0, 320, 240, 0xFDA0);
       String text3 = "Info no almacenada";
-      LCD_Print(text3, 20, 100, 2, 0xffff, 0x421b);
+      LCD_Print(text3, 20, 100, 2, 0xffff, 0xF81F);
       LCD_Bitmap(240, 10, 60, 77, termo);
     }
   }
