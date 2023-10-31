@@ -18,6 +18,8 @@ DHT dht(DHTPIN, DHTTYPE);
 
 // Variables ******************************************************
 String bufferTiva;
+float temp = 0;
+float hum = 0;
 //*****************************************************************
 
 void setup()
@@ -38,40 +40,29 @@ void setup()
   //***************************************************************
 }
 
-void loop()
-{
 
-  float temp = dht.readTemperature();
-  float hum = dht.readHumidity();
+void medirSensor(void){
+  temp = dht.readTemperature();
+  hum = dht.readHumidity();
+}
 
-  if (!isnan(temp) && !isnan(hum))
-  {                                          // verifica que sean números
-    Serial.print("Temperatura: "); // inmprime info sensor
-    Serial.println(temp);
-    Serial.print("Humedad: ");
-    Serial.println(hum);
-    Serial.println("------------------------------");
-    delay(3000);
-  }
-
-  if (Serial2.available())
-  {
-    String inData = Serial2.readStringUntil('\n');
-
-    if (inData == "measure")
-    {
-      if (!isnan(temp) && !isnan(hum))
-      {
+void loop() {
+  if (Serial2.available() > 0) {
+    bufferTiva = Serial2.readStringUntil('\n');
+    bufferTiva.trim(); // Eliminar espacios en blanco y caracteres no deseados
+    if (bufferTiva == "measure") {
+      medirSensor();
+      Serial.println("Midiendo");
+      if (!isnan(temp) && !isnan(hum)) { // Comprobar si los valores son válidos
         Serial2.print("Temperatura y humedad: ");
         Serial2.print(temp);
-        Serial2.print(";");
+        Serial2.print(" ; ");
         Serial2.println(hum);
         Serial.println("Se envió satisfactoriamente la información!");
+      } else {
+        Serial2.println("Error al leer la temperatura y humedad.");
       }
-      else
-      {
-        Serial2.println("Error en la lectura del sensor. Intente nuevamente.");
-      }
+      bufferTiva = "";
     }
   }
 }
