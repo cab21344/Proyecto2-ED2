@@ -24,6 +24,7 @@
 int estadoMed = 0;
 int estadoGuar = 0;
 
+File dataFile;
 const int chipSelect = SS;
 //*****************************************************************
 
@@ -37,26 +38,28 @@ void setup() {
   Serial2.begin(115200);
   SPI.setModule(0);
 
-
-  //se inicia SD ***********************
-  /*Serial.println("Iniciando tarjeta SD");
-  pinMode(chipSelect, OUTPUT);
-
-  if (!SD.begin(chipSelect)) { //pin de la SD
-    Serial.println("Inicialización fallida de SD");
-    while (true) {} //si falla que se quede en bucle
-  }
-  Serial.println("Tarjeta SD inicializada"); //mensaje de SD inicializada
-*/
-
-  //Indica que se inició comunicación serial ***********************
-  Serial.println("Inicio de comunicación serial"); //confimación comunicación serial
-
   //Inputs y Outputs ***********************
   pinMode(botonMedir, INPUT_PULLUP);
   pinMode(botonGuardar, INPUT_PULLUP);
   pinMode(buzzerPin, OUTPUT);
+  pinMode(chipSelect, OUTPUT);
 
+  
+  //se inicia SD ***********************
+  Serial.println("Iniciando tarjeta SD");
+  
+
+  if (!SD.begin(chipSelect)) { //pin de la SD
+    Serial.println("Inicialización fallida de SD");
+    return; //si falla que se quede en bucle
+  }
+  Serial.println("Tarjeta SD inicializada"); //mensaje de SD inicializada
+
+
+  //Indica que se inició comunicación serial ***********************
+  Serial.println("Inicio de comunicación serial"); //confimación comunicación serial
+
+ 
   noTone(buzzerPin); //que inicie sin sonido
 
 }
@@ -96,11 +99,11 @@ void loop() {
   }
   
   if (estadoGuar == LOW) {
-    File dataFile = SD.open("datalog.txt", FILE_WRITE); //archivo para SD
+    dataFile = SD.open("test.txt", FILE_WRITE); //archivo para SD
 
     if (dataFile) {
       String dataString = String(inByte); //de byte a string
-      dataFile.print(dataString); //guarda dato tarjeta SD
+      dataFile.println(dataString); //guarda dato tarjeta SD
       dataFile.close();
       Serial.println("Información almacenada en la SD!");
       tone(buzzerPin, 1000, 500); //tono que indica almaceno la info
