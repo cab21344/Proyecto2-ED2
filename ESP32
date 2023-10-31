@@ -54,10 +54,9 @@ void loop() {
       medirSensor();
       Serial.println("Midiendo");
       if (!isnan(temp) && !isnan(hum)) { // Comprobar si los valores son válidos
-        Serial2.print("Temperatura y humedad: ");
-        Serial2.print(temp);
-        Serial2.print(" ; ");
-        Serial2.println(hum);
+        String dataToSend = "Temperatura y humedad: " + String(temp) + " ; " + String(hum);
+        Serial2.print(dataToSend); // Envía la información al ESP32 como una sola cadena
+        
         Serial.println("Se envió satisfactoriamente la información:");
         Serial.print("Temperatura y humedad: ");
         Serial.print(temp);
