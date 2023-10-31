@@ -26,6 +26,8 @@ int estadoGuar = 0;
 
 File dataFile;
 const int chipSelect = SS;
+
+String inByte; //variable para almacenar datos de puerto serial
 //*****************************************************************
 
 
@@ -70,7 +72,6 @@ void setup() {
 //Void Loops
 //***************************************************************
 void loop() {
-  int inByte = 0; //variable para almacenar datos de puerto serial
   
   //Estados botones
   estadoMed = digitalRead(botonMedir);
@@ -82,28 +83,25 @@ void loop() {
     Serial2.println("measure"); //manda mensaje al puerto serial2 (ESP32)
     tone(buzzerPin, 500, 500); //tono de medición
     delay(500);
+
+
   }
 
-  if (Serial2.available()) { //lectura del puerto serial2 (ESP32)
-    int inByte = Serial2.read(); //guarda info
-    Serial.write(inByte); //imprime info en serial monitor
+  if (Serial2.available()) { //lectura del puerto serial2 (ESP32)    
+    inByte = Serial2.readStringUntil('\n'); //guarda info
+    Serial.println(inByte); //imprime info en serial monitor
   }
 
   if (Serial.available()) {
-    int inByte = Serial.read(); //guarda info en inByte
+    inByte = Serial.read(); //guarda info en inByte
   }
 
   //Boton 2 - Guardar info en la SD **************************************************
-  if(Serial.available()){
-    inByte = Serial.read(); //guarda info en inByte
-  }
-  
   if (estadoGuar == LOW) {
     dataFile = SD.open("test.txt", FILE_WRITE); //archivo para SD
 
     if (dataFile) {
-      String dataString = String(inByte); //de byte a string
-      dataFile.println(dataString); //guarda dato tarjeta SD
+      dataFile.println(inByte); //guarda dato tarjeta SD
       dataFile.close();
       Serial.println("Información almacenada en la SD!");
       tone(buzzerPin, 1000, 500); //tono que indica almaceno la info
