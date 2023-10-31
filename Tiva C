@@ -122,7 +122,11 @@ void loop() {
     tone(buzzerPin, 500, 500); //tono de medición
     delay(500);
 
-
+  LCD_Clear(0xFFFF);
+  
+  FillRect(0, 0, 320, 240, 0x421b);
+  LCD_Print(inByte, 20, 100, 2, 0xffff, 0x421b);
+  LCD_Bitmap(240, 10, 60, 77, termo);
   }
 
   if (Serial2.available()) { //lectura del puerto serial2 (ESP32)
@@ -145,6 +149,7 @@ void loop() {
       Serial.println("Información almacenada en la SD!");
       tone(buzzerPin, 1000, 500); //tono que indica almaceno la info
       delay(500);
+
     } else {
       Serial.println("Error al almacenar información");
       tone(buzzerPin, 200, 500); //tono que indica error
