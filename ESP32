@@ -52,13 +52,13 @@ void loop() {
     bufferTiva.trim(); // Eliminar espacios en blanco y caracteres no deseados
     if (bufferTiva == "measure") {
       medirSensor();
-      Serial.println("Midiendo");
+      Serial.println("Midiendo...");
       if (!isnan(temp) && !isnan(hum)) { // Comprobar si los valores son válidos
-        String dataToSend = "Temperatura y humedad: " + String(temp) + " ; " + String(hum);
+        String dataToSend = String(temp) + " ; " + String(hum);
         Serial2.print(dataToSend); // Envía la información al ESP32 como una sola cadena
         
         Serial.println("Se envió satisfactoriamente la información:");
-        Serial.print("Temperatura y humedad: ");
+        Serial.print("Temp y hum: ");
         Serial.print(temp);
         Serial.print(" ; ");
         Serial.println(hum);
