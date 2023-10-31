@@ -24,8 +24,8 @@
 #include "lcd_registers.h"
 
 // Definiciones ***************************************************
-#define botonMedir PF_4
-#define botonGuardar PF_0
+#define botonMedir PF_4 //Pushbutton 1 de tiva
+#define botonGuardar PF_0 //Pudhbutton 2 de tiva
 #define buzzerPin PF_2
 #define SCK PA_2  // Pin SCK de la Tiva (PA2)
 #define MISO PA_4 // Pin MISO de la Tiva (PA4)
@@ -45,9 +45,9 @@ int DPINS[] = {PB_0, PB_1, PB_2, PB_3, PB_4, PB_5, PB_6, PB_7};
 // Variables ******************************************************
 int estadoMed = 0;
 int estadoGuar = 0;
-int posY = 120;
-File dataFile;
-const int chipSelect = SS;
+
+File dataFile; //para SD
+const int chipSelect = SS; 
 String inByte; //variable para almacenar datos de puerto serial
 //----------------------- Prototipos de funciones -----------------------
 void LCD_Init(void);
@@ -96,24 +96,27 @@ void setup() {
 
 
   noTone(buzzerPin); //que inicie sin sonido
-  // ****************************************************************************
 
+  
+  // ****************************************************************************
+  
+  //Configuración TFT
   SysCtlClockSet(SYSCTL_SYSDIV_2_5 | SYSCTL_USE_PLL | SYSCTL_OSC_MAIN | SYSCTL_XTAL_16MHZ);
   GPIOPadConfigSet(GPIO_PORTB_BASE, 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7, GPIO_STRENGTH_8MA, GPIO_PIN_TYPE_STD_WPU);
   LCD_Init();
-  LCD_Clear(0xFFFF);
+  LCD_Clear(0xFFFF); //limpia la pantalla
 
-  FillRect(0, 0, 320, 240, 0xF81F);
-  String text1 = "Iniciando pantalla";
-  LCD_Print(text1, 20, 100, 2, 0xffff, 0xF81F);
-  LCD_Bitmap(240, 10, 60, 77, termo);
+  FillRect(0, 0, 320, 240, 0xF81F); //llena la pantalla de rosado
+  String text1 = "Iniciando pantalla"; //mensaje
+  LCD_Print(text1, 20, 100, 2, 0xffff, 0xF81F); //escribe el mensaje con fondo rosado
+  LCD_Bitmap(240, 10, 60, 77, termo); //imprime imagen
 
 }
 
 // ----------------------- Void Loop -----------------------
 void loop() {
-  //Estados botones
-  estadoMed = digitalRead(botonMedir);
+  //Lectura estados botones
+  estadoMed = digitalRead(botonMedir); 
   estadoGuar = digitalRead(botonGuardar);
 
   //Boton 1 - Pide info al ESP32 **************************************************
@@ -123,13 +126,13 @@ void loop() {
     tone(buzzerPin, 500, 500); //tono de medición
     delay(500);
 
-    LCD_Clear(0xFFFF);
+    LCD_Clear(0xFFFF); //limpia la pantalla
 
-    FillRect(0, 0, 320, 240, 0xFDA0);
+    FillRect(0, 0, 320, 240, 0xFDA0); //llena la pantalla de anaranjado
     String text5 = "Temp y hum:";
-    LCD_Print(text5, 20, 75, 2, 0xffff, 0xF81F);
-    LCD_Print(inByte, 20, 100, 2, 0xffff, 0xF81F);
-    LCD_Bitmap(240, 10, 60, 77, termo);
+    LCD_Print(text5, 20, 75, 2, 0xffff, 0xF81F); //escribe el mensaje con fondo rosado
+    LCD_Print(inByte, 20, 100, 2, 0xffff, 0xF81F); //escribe el strign con fondo rosado
+    LCD_Bitmap(240, 10, 60, 77, termo); //imprime imagen
 
 
   }
@@ -155,26 +158,25 @@ void loop() {
       Serial.println("Información almacenada en la SD!");
       tone(buzzerPin, 1000, 500); //tono que indica almaceno la info
       delay(500);
-      LCD_Clear(0xFFFF);
+      LCD_Clear(0xFFFF); //limpia la pantalla
 
-      FillRect(0, 0, 320, 240, 0xFDA0);
+      FillRect(0, 0, 320, 240, 0xFDA0); //llena la pantalla de naranja
       String text2 = "Info almacenada";
-      LCD_Print(text2, 20, 100, 2, 0xffff, 0xF81F);
-      LCD_Bitmap(240, 10, 60, 77, termo);
+      LCD_Print(text2, 20, 100, 2, 0xffff, 0xF81F); //imprime texto con fondo rosado
+      LCD_Bitmap(240, 10, 60, 77, termo); //imprime imagen
     } else {
       Serial.println("Error al almacenar información");
       tone(buzzerPin, 200, 500); //tono que indica error
       delay(500);
-      LCD_Clear(0xFFFF);
+      LCD_Clear(0xFFFF); //limpia pantalla
 
-      FillRect(0, 0, 320, 240, 0xFDA0);
+      FillRect(0, 0, 320, 240, 0xFDA0); //llena la pantalla de anaranjado
       String text3 = "Info no almacenada";
-      LCD_Print(text3, 20, 100, 2, 0xffff, 0xF81F);
-      LCD_Bitmap(240, 10, 60, 77, termo);
+      LCD_Print(text3, 20, 100, 2, 0xffff, 0xF81F); //imprime mensaje con fondo rosado
+      LCD_Bitmap(240, 10, 60, 77, termo); //imprime imagen
     }
   }
-
-
+  
   delay(100);
   noTone(buzzerPin); //sin tono
 }
